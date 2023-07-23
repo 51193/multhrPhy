@@ -148,10 +148,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Body.cpp" />
+    <ClCompile Include="Circle.cpp" />
+    <ClCompile Include="CollisionFunction.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="State.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Body.h" />
+    <ClInclude Include="Circle.h" />
+    <ClInclude Include="CollisionFunction.h" />
+    <ClInclude Include="Object.h" />
+    <ClInclude Include="State.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

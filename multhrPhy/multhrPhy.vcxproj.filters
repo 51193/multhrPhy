@@ -16,6 +16,18 @@
     <Filter Include="Body">
       <UniqueIdentifier>{f059d173-fc4e-483f-abcc-479e67575629}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{766a9e3a-8c32-4442-8184-579d0eab2784}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="State">
+      <UniqueIdentifier>{bf658593-711b-40a9-bb79-8f6dcc510aaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Circle">
+      <UniqueIdentifier>{53f8b475-d511-4a53-8712-83f48187fe41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CollisionFunction">
+      <UniqueIdentifier>{e20dc4b7-d42a-49b4-a569-477bd249c694}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -24,10 +36,34 @@
     <ClCompile Include="Body.cpp">
       <Filter>Body</Filter>
     </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="State.cpp">
+      <Filter>State</Filter>
+    </ClCompile>
+    <ClCompile Include="Circle.cpp">
+      <Filter>Circle</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionFunction.cpp">
+      <Filter>CollisionFunction</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Body.h">
       <Filter>Body</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="State.h">
+      <Filter>State</Filter>
+    </ClInclude>
+    <ClInclude Include="Circle.h">
+      <Filter>Circle</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionFunction.h">
+      <Filter>CollisionFunction</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,10 +2,12 @@
 #define BODY_H
 
 #include<fstream>
-#include<iostream>
+#include<stack>
 
 #include<SFML/Graphics.hpp>
 #include<SFML/Window.hpp>
+
+#include"State.h"
 
 class Body
 {
@@ -30,7 +32,7 @@ private:
 
 	//State变量
 
-	/*std::stack<State*>states;*/
+	State* state;
 
 	//初始化
 
@@ -38,7 +40,7 @@ private:
 
 	void initWindow();
 	void initFont();
-	/*void initStates();*/
+	void initStates();
 
 	//零散update函数
 

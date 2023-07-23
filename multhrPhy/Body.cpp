@@ -4,7 +4,7 @@ void Body::init()
 {
 	this->initWindow();
 	this->initFont();
-	//this->initStates();
+	this->initStates();
 }
 
 void Body::initWindow()
@@ -76,10 +76,10 @@ void Body::initFont()
 	input.close();
 }
 
-//void Body::initStates()
-//{
-//	states.push(new MainMenu(*window, font, states));
-//}
+void Body::initStates()
+{
+	state = new State{};
+}
 
 void Body::updateDt()
 {
@@ -103,10 +103,7 @@ Body::Body()
 Body::~Body()
 {
 	delete this->window;
-	/*while (!this->states.empty()) {
-		delete this->states.top();
-		this->states.pop();
-	}*/
+	delete this->state;
 }
 
 void Body::update()
@@ -114,14 +111,14 @@ void Body::update()
 	this->updateDt();
 	this->updateSFMLEvent();
 
-	/*this->states.top()->update(this->dt);*/
+	this->state->update(this->dt);
 }
 
 void Body::render()
 {
 	this->window->clear();
 
-	/*this->states.top()->render(*this->window);*/
+	this->state->render(*this->window);
 
 	this->window->display();
 }
