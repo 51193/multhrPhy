@@ -1,4 +1,4 @@
-#ifndef STATE_H
+ï»¿#ifndef STATE_H
 #define STATE_H
 
 #include"Circle.h"
@@ -15,8 +15,8 @@ public:
 	State();
 	~State();
 
-	void updateGravity(const float& dt);//ÏòËùÓĞÎïÌåÊ©¼ÓÖØÁ¦¼ÓËÙ¶È
-	void updateBoundary();//¸ù¾İ±ß½ç½øĞĞ·´µ¯£¬ºóÃæ»áĞŞ¸Ä£¬ÏÖÔÚÊÇÖ±½ÓĞ´ËÀµÄ
+	void updateGravity(const float& dt);//å‘æ‰€æœ‰ç‰©ä½“æ–½åŠ é‡åŠ›åŠ é€Ÿåº¦
+	void updateBoundary();//æ ¹æ®è¾¹ç•Œè¿›è¡Œåå¼¹ï¼Œåé¢ä¼šä¿®æ”¹ï¼Œç°åœ¨æ˜¯ç›´æ¥å†™æ­»çš„
 
 	void update(const float& dt);
 	void render(sf::RenderTarget& target);

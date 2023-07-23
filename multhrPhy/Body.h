@@ -1,4 +1,4 @@
-#ifndef BODY_H
+ï»¿#ifndef BODY_H
 #define BODY_H
 
 #include<fstream>
@@ -13,28 +13,28 @@ class Body
 {
 private:
 
-	//´°¿ÚÏà¹Ø±äÁ¿
+	//çª—å£ç›¸å…³å˜é‡
 
 	sf::RenderWindow* window;
 
-	//ÊÂ¼ş±äÁ¿
+	//äº‹ä»¶å˜é‡
 
 	sf::Event event;
 
-	//´°¿ÚË¢ĞÂÏà¹Ø±äÁ¿
+	//çª—å£åˆ·æ–°ç›¸å…³å˜é‡
 
 	sf::Clock dt_clock;
 	float dt;
 
-	//×ÖÌå±äÁ¿
+	//å­—ä½“å˜é‡
 
 	sf::Font font;
 
-	//State±äÁ¿
+	//Stateå˜é‡
 
 	State* state;
 
-	//³õÊ¼»¯
+	//åˆå§‹åŒ–
 
 	void init();
 
@@ -42,18 +42,18 @@ private:
 	void initFont();
 	void initStates();
 
-	//ÁãÉ¢updateº¯Êı
+	//é›¶æ•£updateå‡½æ•°
 
 	void updateDt();
 	void updateSFMLEvent();
 
 public:
-	//¹¹Ôìº¯ÊıÓëÎö¹¹º¯Êı
+	//æ„é€ å‡½æ•°ä¸ææ„å‡½æ•°
 
 	Body();
 	~Body();
 
-	//¹¦ÄÜº¯Êı
+	//åŠŸèƒ½å‡½æ•°
 
 	void update();
 	void render();

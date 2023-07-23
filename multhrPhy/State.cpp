@@ -1,9 +1,9 @@
-#include "State.h"
+ï»¿#include "State.h"
 
 State::State()
 {
 
-	g = sf::Vector2f(0.f, 1000.f);//ÖØÁ¦¼ÓËÙ¶È
+	g = sf::Vector2f(0.f, 1000.f);//é‡åŠ›åŠ é€Ÿåº¦
 
 	this->background.setFillColor(sf::Color::White);
 	this->background.setPosition(0.f, 0.f);
@@ -35,7 +35,7 @@ void State::updateBoundary()
 	{
 		if (i->shapeType() == "circle")
 		{
-			if (dynamic_cast<Circle*>(i)->getPosition().y + dynamic_cast<Circle*>(i)->getRadius() > 1000.f)//Õâ¸öĞ´ËÀµÄ1000ºó±ßµÃ¸Ä
+			if (dynamic_cast<Circle*>(i)->getPosition().y + dynamic_cast<Circle*>(i)->getRadius() > 1000.f)//è¿™ä¸ªå†™æ­»çš„1000åè¾¹å¾—æ”¹
 			{
 				if (i->getVelocity().y > 0.f)
 					i->setVelocity(sf::Vector2f(i->getVelocity().x, -1.f * i->getVelocity().y));
@@ -45,7 +45,7 @@ void State::updateBoundary()
 				if (i->getVelocity().y < 0.f)
 					i->setVelocity(sf::Vector2f(i->getVelocity().x, -1.f * i->getVelocity().y));
 			}
-			if (dynamic_cast<Circle*>(i)->getPosition().x + dynamic_cast<Circle*>(i)->getRadius() > 1000.f)//Õâ¸öĞ´ËÀµÄ1000ºó±ßµÃ¸Ä
+			if (dynamic_cast<Circle*>(i)->getPosition().x + dynamic_cast<Circle*>(i)->getRadius() > 1000.f)//è¿™ä¸ªå†™æ­»çš„1000åè¾¹å¾—æ”¹
 			{
 				if (i->getVelocity().x > 0.f)
 					i->setVelocity(sf::Vector2f(-1.f * i->getVelocity().x, i->getVelocity().y));

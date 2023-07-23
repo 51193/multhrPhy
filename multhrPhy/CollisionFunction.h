@@ -1,4 +1,4 @@
-#ifndef COLLISIONFUNCTION_H
+﻿#ifndef COLLISIONFUNCTION_H
 #define COLLISIONFUNCION_H
 
 #include<string>

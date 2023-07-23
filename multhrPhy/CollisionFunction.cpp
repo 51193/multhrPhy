@@ -1,4 +1,4 @@
-#include "CollisionFunction.h"
+﻿#include "CollisionFunction.h"
 
 const float CollisionFunction::point_point_dis(const sf::Vector2f& point1, const sf::Vector2f& point2)
 {

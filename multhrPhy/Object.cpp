@@ -1,4 +1,4 @@
-#include "Object.h"
+﻿#include "Object.h"
 
 std::vector<Object*>Object::objects;
 

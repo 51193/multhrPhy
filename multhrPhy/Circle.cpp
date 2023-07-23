@@ -1,4 +1,4 @@
-#include "Circle.h"
+ï»¿#include "Circle.h"
 
 Circle::Circle(const float& mass, const sf::Vector2f velocity, const sf::Vector2f& position, const float& radius)
 	:Object{ mass,velocity }, position{ position }, radius{ radius }
@@ -47,7 +47,7 @@ void Circle::updateMovement(const float& dt)
 
 void Circle::updateCollision()
 {
-	//±ğÖØ¸´ÅĞ¶¨Í¬Ò»¸öÎïÌå
+	//åˆ«é‡å¤åˆ¤å®šåŒä¸€ä¸ªç‰©ä½“
 }
 
 void Circle::updateLogic()

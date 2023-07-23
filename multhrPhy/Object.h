@@ -1,4 +1,4 @@
-#ifndef OBJECT_H
+ï»¿#ifndef OBJECT_H
 #define OBJECT_H
 
 #include<vector>
@@ -6,29 +6,29 @@
 
 #include"CollisionFunction.h"
 
-class Object//ÕâÊÇ¸ö´¿ĞéÀà£¬´¿´âÌá¹©Í³Ò»Ö¸ÕëºÍÓÃÀ´±»¼Ì³ĞµÄ
+class Object//è¿™æ˜¯ä¸ªçº¯è™šç±»ï¼Œçº¯ç²¹æä¾›ç»Ÿä¸€æŒ‡é’ˆå’Œç”¨æ¥è¢«ç»§æ‰¿çš„
 {
 protected:
 	float mass;
 	sf::Vector2f velocity;
 public:
-	static std::vector<Object*>objects;//ËùÓĞĞÂÉú³ÉµÄÍ¼ĞÎ¶¼»á±»´æÔÚÕâ¸ö¾²Ì¬±äÁ¿Àï£¬·½±ãµ÷ÓÃ
+	static std::vector<Object*>objects;//æ‰€æœ‰æ–°ç”Ÿæˆçš„å›¾å½¢éƒ½ä¼šè¢«å­˜åœ¨è¿™ä¸ªé™æ€å˜é‡é‡Œï¼Œæ–¹ä¾¿è°ƒç”¨
 
 	Object(const float& mass, const sf::Vector2f velocity);
 	~Object();
 
 	const float& getMass();
 	const sf::Vector2f& getVelocity();
-	void appendVelocity(const sf::Vector2f& append_velocity);//Ô­ËÙ¶Èµş¼ÓĞÂËÙ¶È
-	void setVelocity(const sf::Vector2f& set_velocity);//ĞÂËÙ¶È¸²¸ÇÔ­ËÙ¶È
+	void appendVelocity(const sf::Vector2f& append_velocity);//åŸé€Ÿåº¦å åŠ æ–°é€Ÿåº¦
+	void setVelocity(const sf::Vector2f& set_velocity);//æ–°é€Ÿåº¦è¦†ç›–åŸé€Ÿåº¦
 
-	virtual const std::string shapeType() = 0;//·µ»Ø´ú±íÍ¼ĞÎÖÖÀàµÄ×Ö·û´®£¬²»Í¬×ÓÀà·µ»Ø²»Í¬×Ö·û´®
+	virtual const std::string shapeType() = 0;//è¿”å›ä»£è¡¨å›¾å½¢ç§ç±»çš„å­—ç¬¦ä¸²ï¼Œä¸åŒå­ç±»è¿”å›ä¸åŒå­—ç¬¦ä¸²
 
 	void update(const float& dt);
 
-	virtual void updateMovement(const float& dt) = 0;//¸ù¾İµ±Ç°ËÙ¶ÈºÍ×ø±êË¢ĞÂ×ø±ê
-	virtual void updateCollision() = 0;//ÅĞ¶ÏÅö×²£¬ÔİÊ±»¹Ã»Ğ´
-	virtual void updateLogic() = 0;//Ò»Ğ©·Å²»½øÇ°Á½¸öº¯ÊıµÄ¹¦ÄÜ¿ÉÒÔĞ´½øÕâÀï
+	virtual void updateMovement(const float& dt) = 0;//æ ¹æ®å½“å‰é€Ÿåº¦å’Œåæ ‡åˆ·æ–°åæ ‡
+	virtual void updateCollision() = 0;//åˆ¤æ–­ç¢°æ’ï¼Œæš‚æ—¶è¿˜æ²¡å†™
+	virtual void updateLogic() = 0;//ä¸€äº›æ”¾ä¸è¿›å‰ä¸¤ä¸ªå‡½æ•°çš„åŠŸèƒ½å¯ä»¥å†™è¿›è¿™é‡Œ
 
 	virtual void render(sf::RenderTarget& target) = 0;
 };
