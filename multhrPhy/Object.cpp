@@ -31,9 +31,10 @@ void Object::setVelocity(const sf::Vector2f& set_velocity)
 	this->velocity = set_velocity;
 }
 
-void Object::update(const float& dt)
+void Object::update(const float& dt, const sf::Vector2f& rendering_size, const sf::Vector2f& logical_size, const sf::Vector2f& offset)
 {
 	this->updateCollision();
 	this->updateMovement(dt);
 	this->updateLogic();
+	this->updateShape(rendering_size, logical_size, offset);
 }

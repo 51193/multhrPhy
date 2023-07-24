@@ -1,37 +1,56 @@
 ﻿#include "Circle.h"
 
 Circle::Circle(const float& mass, const sf::Vector2f velocity, const sf::Vector2f& position, const float& radius)
-	:Object{ mass,velocity }, position{ position }, radius{ radius }
+	:Object{ mass,velocity }, logical_position{ position }, logical_radius{ radius }
 {
 	Object::objects.push_back(this);
 	this->circle.setFillColor(sf::Color::Black);
 	this->circle.setOutlineColor(sf::Color::Black);
-	this->circle.setPosition(this->position);
-	this->circle.setRadius(this->radius);
+	this->circle.setRadius(this->logical_radius);
 }
 
 Circle::~Circle()
 {
 }
 
-const sf::Vector2f& Circle::getPosition()
+const sf::Vector2f& Circle::getLogicalPosition()
 {
-	return this->position;
+	return this->logical_position;
 }
 
-const float& Circle::getRadius()
+const sf::Vector2f& Circle::getRenderingPosition()
 {
-	return this->radius;
+	return this->rendering_position;
 }
 
-void Circle::setPosition(const sf::Vector2f& position)
+const float& Circle::getLogicalRadius()
 {
-	this->position = position;
+	return this->logical_radius;
 }
 
-void Circle::setRadius(const float& radius)
+const float& Circle::getRenderingRadius()
 {
-	this->radius = radius;
+	return this->rendering_radius;
+}
+
+void Circle::setLogicalPosition(const sf::Vector2f& position)
+{
+	this->logical_position = position;
+}
+
+void Circle::setRenderingPosition(const sf::Vector2f& position)
+{
+	this->rendering_position = position;
+}
+
+void Circle::setLogicalRadius(const float& radius)
+{
+	this->logical_radius = radius;
+}
+
+void Circle::setRenderingRadius(const float& radius)
+{
+	this->rendering_radius = radius;
 }
 
 const std::string Circle::shapeType()
@@ -41,8 +60,19 @@ const std::string Circle::shapeType()
 
 void Circle::updateMovement(const float& dt)
 {
-	this->position += this->velocity * dt;
-	this->circle.setPosition(this->position);
+	this->logical_position += this->velocity * dt;
+}
+
+void Circle::updateShape(const sf::Vector2f& rendering_size, const sf::Vector2f& logical_size, const sf::Vector2f& offset)
+{
+	float x = rendering_size.x / logical_size.x;
+	float y = rendering_size.y / logical_size.y;
+
+	this->rendering_position.x = this->logical_position.x * x + offset.x;
+	this->rendering_position.y = this->logical_position.y * y + offset.y;
+
+	this->circle.setScale(sf::Vector2f(x, y));
+	this->circle.setPosition(this->rendering_position);
 }
 
 void Circle::updateCollision()

@@ -59,7 +59,7 @@ void Body::initWindow()
 
 void Body::initFont()
 {
-	std::ifstream input("Font/Font.ini", std::ios::in);
+	std::ifstream input("../Font/Font.ini", std::ios::in);
 	std::string font_path;
 	char buffer;
 
@@ -78,7 +78,7 @@ void Body::initFont()
 
 void Body::initStates()
 {
-	state = new State{};
+	state = new State{ *this->window,this->font };
 }
 
 void Body::updateDt()

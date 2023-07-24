@@ -24,9 +24,10 @@ public:
 
 	virtual const std::string shapeType() = 0;//返回代表图形种类的字符串，不同子类返回不同字符串
 
-	void update(const float& dt);
+	void update(const float& dt, const sf::Vector2f& rendering_size, const sf::Vector2f& logical_size, const sf::Vector2f& offset);
 
 	virtual void updateMovement(const float& dt) = 0;//根据当前速度和坐标刷新坐标
+	virtual void updateShape(const sf::Vector2f& rendering_size, const sf::Vector2f& logical_size, const sf::Vector2f& offset) = 0;//根据当前坐标与缩放比例修改显示图像位置和大小
 	virtual void updateCollision() = 0;//判断碰撞，暂时还没写
 	virtual void updateLogic() = 0;//一些放不进前两个函数的功能可以写进这里
 
