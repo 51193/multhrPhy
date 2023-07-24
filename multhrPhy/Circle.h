@@ -10,23 +10,20 @@ private:
     sf::Vector2f logical_position;
     sf::Vector2f rendering_position;
     float logical_radius;
-    float rendering_radius;
 
     sf::CircleShape circle;
 
 public:
-    Circle(const float& mass, const sf::Vector2f velocity, const sf::Vector2f& position, const float& radius);
+    Circle(const float& mass, const sf::Vector2f& velocity, const sf::Vector2f& position, const float& radius);
     ~Circle();
 
     const sf::Vector2f& getLogicalPosition();
     const sf::Vector2f& getRenderingPosition();
     const float& getLogicalRadius();
-    const float& getRenderingRadius();
 
     void setLogicalPosition(const sf::Vector2f& position);
     void setRenderingPosition(const sf::Vector2f& position);
     void setLogicalRadius(const float& radius);
-    void setRenderingRadius(const float& radius);
 
     virtual const std::string shapeType();
 

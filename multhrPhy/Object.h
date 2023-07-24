@@ -2,7 +2,10 @@
 #define OBJECT_H
 
 #include<vector>
+#include<utility>
 #include<iostream>
+
+#include"Circle.h"//循环include了，为了judgeCollision()能用，如果有更好的办法最好把这个循环include拆了
 
 #include"CollisionFunction.h"
 
@@ -13,8 +16,13 @@ protected:
 	sf::Vector2f velocity;
 public:
 	static std::vector<Object*>objects;//所有新生成的图形都会被存在这个静态变量里，方便调用
+	static std::vector<std::pair<Object*, Object*>>collision_pairs;//储存所有可能的碰撞对
+	static void handleCollision();
 
-	Object(const float& mass, const sf::Vector2f velocity);
+	static const bool judgeCollision(Object* object1, Object* object2);
+
+
+	Object(const float& mass, const sf::Vector2f& velocity);
 	~Object();
 
 	const float& getMass();

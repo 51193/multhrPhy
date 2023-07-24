@@ -1,6 +1,6 @@
 ﻿#include "Circle.h"
 
-Circle::Circle(const float& mass, const sf::Vector2f velocity, const sf::Vector2f& position, const float& radius)
+Circle::Circle(const float& mass, const sf::Vector2f& velocity, const sf::Vector2f& position, const float& radius)
 	:Object{ mass,velocity }, logical_position{ position }, logical_radius{ radius }
 {
 	Object::objects.push_back(this);
@@ -28,11 +28,6 @@ const float& Circle::getLogicalRadius()
 	return this->logical_radius;
 }
 
-const float& Circle::getRenderingRadius()
-{
-	return this->rendering_radius;
-}
-
 void Circle::setLogicalPosition(const sf::Vector2f& position)
 {
 	this->logical_position = position;
@@ -46,11 +41,6 @@ void Circle::setRenderingPosition(const sf::Vector2f& position)
 void Circle::setLogicalRadius(const float& radius)
 {
 	this->logical_radius = radius;
-}
-
-void Circle::setRenderingRadius(const float& radius)
-{
-	this->rendering_radius = radius;
 }
 
 const std::string Circle::shapeType()
@@ -77,7 +67,21 @@ void Circle::updateShape(const sf::Vector2f& rendering_size, const sf::Vector2f&
 
 void Circle::updateCollision()
 {
-	//别重复判定同一个物体
+	bool flag{ false };
+	for (size_t i{ 0 }; i < Object::objects.size(); i++)
+	{
+		if (flag)
+		{
+			if (Object::judgeCollision(this, Object::objects[i]))
+			{
+				Object::collision_pairs.push_back(std::make_pair(this, Object::objects[i]));
+			}
+		}
+		else if (Object::objects[i] = this)
+		{
+			flag = true;
+		}
+	}
 }
 
 void Circle::updateLogic()

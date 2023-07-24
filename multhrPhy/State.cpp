@@ -71,6 +71,7 @@ void State::update(const float& dt)
 	{
 		i->update(dt, this->background.getSize(), this->logical_size, sf::Vector2f(0, 0));
 	}
+	Object::handleCollision();
 }
 
 void State::render(sf::RenderTarget& target)
