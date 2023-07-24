@@ -1,11 +1,24 @@
 ﻿#include "Circle.h"
+#include <cstdlib>
+#include <ctime>
 
-Circle::Circle(const float& mass, const sf::Vector2f velocity, const sf::Vector2f& position, const float& radius)
+static sf::Color color_list[7] = {
+	sf::Color::Black,
+	sf::Color::Red,
+	sf::Color::Green,
+	sf::Color::Blue,
+	sf::Color::Yellow,
+	sf::Color::Magenta,
+	sf::Color::Cyan,
+};
+
+
+Circle::Circle(const float& mass, const sf::Vector2f velocity, const sf::Vector2f& position, const float& radius, const int& color_index)
 	:Object{ mass,velocity }, position{ position }, radius{ radius }
 {
 	Object::objects.push_back(this);
-	this->circle.setFillColor(sf::Color::Black);
-	this->circle.setOutlineColor(sf::Color::Black);
+	this->circle.setFillColor(color_list[color_index]);
+	this->circle.setOutlineColor(color_list[color_index]);
 	this->circle.setPosition(this->position);
 	this->circle.setRadius(this->radius);
 }

@@ -9,52 +9,16 @@ void Body::init()
 
 void Body::initWindow()
 {
-	std::string title;
+	std::string title = "Game";
 	sf::VideoMode window_bounds;
-	unsigned int framerate_limit;
-	bool vertical_sync_enabled;
-	unsigned int antialiasing_level;
-	bool isfullscreen;
-
 	sf::ContextSettings window_settings;
 
-	std::ifstream input("../Config/WindowSetting.ini", std::ios::in);
-
-	if (input.is_open()) {
-		std::getline(input, title);
-		input >> window_bounds.width >> window_bounds.height;
-		input >> isfullscreen;
-		input >> framerate_limit;
-		input >> vertical_sync_enabled;
-		input >> antialiasing_level;
-
-		window_settings.antialiasingLevel = antialiasing_level;
-
-		if (isfullscreen) {
-			this->window = new sf::RenderWindow(window_bounds, title, sf::Style::Fullscreen, window_settings);
-		}
-		else {
-			this->window = new sf::RenderWindow(window_bounds, title, sf::Style::Titlebar | sf::Style::Close, window_settings);
-		}
-
-		this->window->setFramerateLimit(framerate_limit);
-		this->window->setVerticalSyncEnabled(vertical_sync_enabled);
-	}
-	else {
-		std::ofstream output("../Config/WindowSetting.ini", std::ios::out);
-		output << "Game" << std::endl;
-		output << sf::VideoMode::getDesktopMode().width << std::endl;
-		output << sf::VideoMode::getDesktopMode().height << std::endl;
-		output << false << std::endl;
-		output << 120 << std::endl;
-		output << false << std::endl;
-		output << 0 << std::endl;
-		output.close();
-
-		initWindow();
-	}
-
-	input.close();
+	window_bounds.width = sf::VideoMode::getDesktopMode().width;
+	window_bounds.height = sf::VideoMode::getDesktopMode().height;
+	this->window = new sf::RenderWindow(window_bounds, title, sf::Style::Titlebar | sf::Style::Close, window_settings);
+	this->window->setFramerateLimit(120);
+	this->window->setVerticalSyncEnabled(false);
+	window_settings.antialiasingLevel = 0;
 }
 
 void Body::initFont()
