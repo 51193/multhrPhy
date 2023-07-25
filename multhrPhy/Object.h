@@ -5,9 +5,7 @@
 #include<utility>
 #include<iostream>
 
-#include"Circle.h"//循环include了，为了judgeCollision()能用，如果有更好的办法最好把这个循环include拆了
-
-#include"CollisionFunction.h"
+#include"MathFunction.h"
 
 class Object//这是个纯虚类，纯粹提供统一指针和用来被继承的
 {
@@ -17,10 +15,6 @@ protected:
 public:
 	static std::vector<Object*>objects;//所有新生成的图形都会被存在这个静态变量里，方便调用
 	static std::vector<std::pair<Object*, Object*>>collision_pairs;//储存所有可能的碰撞对
-	static void handleCollision();
-
-	static const bool judgeCollision(Object* object1, Object* object2);
-
 
 	Object(const float& mass, const sf::Vector2f& velocity);
 	~Object();

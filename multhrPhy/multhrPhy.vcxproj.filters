@@ -45,7 +45,7 @@
     <ClCompile Include="Circle.cpp">
       <Filter>Circle</Filter>
     </ClCompile>
-    <ClCompile Include="CollisionFunction.cpp">
+    <ClCompile Include="MathFunction.cpp">
       <Filter>CollisionFunction</Filter>
     </ClCompile>
   </ItemGroup>
@@ -62,7 +62,7 @@
     <ClInclude Include="Circle.h">
       <Filter>Circle</Filter>
     </ClInclude>
-    <ClInclude Include="CollisionFunction.h">
+    <ClInclude Include="MathFunction.h">
       <Filter>CollisionFunction</Filter>
     </ClInclude>
   </ItemGroup>

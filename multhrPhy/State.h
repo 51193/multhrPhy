@@ -1,6 +1,8 @@
 ﻿#ifndef STATE_H
 #define STATE_H
 
+#include<random>
+
 #include"Circle.h"
 
 class State
@@ -16,6 +18,8 @@ private:
 	sf::Vector2f g;
 
 	sf::RectangleShape background;
+
+	void handleCollision();
 
 public:
 	State(sf::RenderWindow& window, sf::Font& font);

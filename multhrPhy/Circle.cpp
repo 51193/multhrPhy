@@ -3,7 +3,6 @@
 Circle::Circle(const float& mass, const sf::Vector2f& velocity, const sf::Vector2f& position, const float& radius)
 	:Object{ mass,velocity }, logical_position{ position }, logical_radius{ radius }
 {
-	Object::objects.push_back(this);
 	this->circle.setFillColor(sf::Color::Black);
 	this->circle.setOutlineColor(sf::Color::Black);
 	this->circle.setRadius(this->logical_radius);
@@ -72,9 +71,16 @@ void Circle::updateCollision()
 	{
 		if (flag)
 		{
-			if (Object::judgeCollision(this, Object::objects[i]))
+
+			if (Object::objects[i]->shapeType() == "circle")
 			{
-				Object::collision_pairs.push_back(std::make_pair(this, Object::objects[i]));
+				Circle* circle = dynamic_cast<Circle*>(Object::objects[i]);
+				if (MathFunction::circle_circle_jud
+				(this->getLogicalPosition(), circle->getLogicalPosition(), this->getLogicalRadius(), circle->getLogicalRadius())
+					)
+				{
+					Object::collision_pairs.push_back(std::make_pair(this, Object::objects[i]));
+				}
 			}
 		}
 		else if (Object::objects[i] = this)
