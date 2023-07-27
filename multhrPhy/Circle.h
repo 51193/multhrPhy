@@ -14,7 +14,7 @@ private:
     sf::CircleShape circle;
 
 public:
-    Circle(const float& mass, const sf::Vector2f& velocity, const sf::Vector2f& position, const float& radius);
+    Circle(const float& mass, const sf::Vector2f velocity, const sf::Vector2f& position, const float& radius, const int& color_index);
     ~Circle();
 
     const sf::Vector2f& getLogicalPosition();
