@@ -7,6 +7,8 @@ class Circle :
     public Object
 {
 private:
+    std::string shape_type;
+
     sf::Vector2f logical_position;
     sf::Vector2f rendering_position;
     float logical_radius;
@@ -29,7 +31,7 @@ public:
 
     virtual void updateMovement(const float& dt);
     virtual void updateShape(const sf::Vector2f& rendering_size, const sf::Vector2f& logical_size, const sf::Vector2f& offset);
-    virtual void updateCollision();
+    //virtual void updateCollision();
     virtual void updateLogic();
 
     virtual void render(sf::RenderTarget& target);

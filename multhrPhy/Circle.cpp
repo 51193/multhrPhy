@@ -14,7 +14,7 @@ static sf::Color color_list[7] = {
 
 
 Circle::Circle(const float& mass, const sf::Vector2f velocity, const sf::Vector2f& position, const float& radius, const int& color_index)
-	:Object{ mass,velocity }, logical_position{ position }, logical_radius{ radius }
+	:Object{ mass,velocity }, logical_position{ position }, logical_radius{ radius }, shape_type{ "circle" }
 {
 	this->circle.setFillColor(sf::Color::Black);
 	this->circle.setFillColor(color_list[color_index]);
@@ -59,7 +59,7 @@ void Circle::setLogicalRadius(const float& radius)
 
 const std::string Circle::shapeType()
 {
-	return "circle";
+	return this->shape_type;
 }
 
 void Circle::updateMovement(const float& dt)
@@ -77,32 +77,6 @@ void Circle::updateShape(const sf::Vector2f& rendering_size, const sf::Vector2f&
 
 	this->circle.setScale(sf::Vector2f(x, y));
 	this->circle.setPosition(this->rendering_position);
-}
-
-void Circle::updateCollision()
-{
-	bool flag{ false };
-	for (size_t i{ 0 }; i < Object::objects.size(); i++)
-	{
-		if (flag)
-		{
-
-			if (Object::objects[i]->shapeType() == "circle")
-			{
-				Circle* circle = dynamic_cast<Circle*>(Object::objects[i]);
-				if (MathFunction::circle_circle_jud
-				(this->getLogicalPosition(), circle->getLogicalPosition(), this->getLogicalRadius(), circle->getLogicalRadius())
-					)
-				{
-					Object::collision_pairs.push_back(std::make_pair(this, Object::objects[i]));
-				}
-			}
-		}
-		else if (Object::objects[i] = this)
-		{
-			flag = true;
-		}
-	}
 }
 
 void Circle::updateLogic()

@@ -1,45 +1,8 @@
 ﻿#include "State.h"
-
-void State::handleCollision()
-{
-	for (auto& i : Object::collision_pairs)
-	{
-		if (i.first->shapeType() == "circle" && i.second->shapeType() == "circle")
-		{
-			Circle* circle1 = dynamic_cast<Circle*>(i.first);
-			Circle* circle2 = dynamic_cast<Circle*>(i.second);
-
-			const sf::Vector2f& v1 = circle1->getVelocity();
-			const sf::Vector2f& v2 = circle2->getVelocity();
-
-			const sf::Vector2f& c1 = circle2->getLogicalPosition() - circle1->getLogicalPosition();
-			const sf::Vector2f& c2 = circle1->getLogicalPosition() - circle2->getLogicalPosition();
-
-			if (
-				MathFunction::scalar_product(v1, c1) / MathFunction::point_point_dis(sf::Vector2f(0.f, 0.f), c1)
-				+
-				MathFunction::scalar_product(v2, c2) / MathFunction::point_point_dis(sf::Vector2f(0.f, 0.f), c2)
-				> 0.f
-				)
-			{
-				float m1 = circle1->getMass();
-				float m2 = circle2->getMass();
-
-				circle1->setVelocity(sf::Vector2f(
-					((m1 - m2) * v1.x + 2 * m2 * v2.x) / (m1 + m2),
-					((m1 - m2) * v1.y + 2 * m2 * v2.y) / (m1 + m2)
-				));
-				circle2->setVelocity(sf::Vector2f(
-					((m2 - m1) * v2.x + 2 * m1 * v1.x) / (m1 + m2),
-					((m2 - m1) * v2.y + 2 * m1 * v1.y) / (m1 + m2)
-				));//这俩式子是我拿动量定理跟动能定理联立解出来的，不知道为什么不能用
-			}
-		}
-	}
-}
+#include <chrono>
 
 State::State(sf::RenderWindow& window, sf::Font& font)
-	:window{ window }, font{ font }, window_size{ this->window.getSize() }
+	:window{ window }, font{ font }, window_size{ this->window.getSize() }, total_dt{ 0 }, update_times{ 0 }, lock{}
 {
 
 	this->logical_size = sf::Vector2f{ 1600.f,1000.f };//初始化大小
@@ -50,7 +13,17 @@ State::State(sf::RenderWindow& window, sf::Font& font)
 	this->background.setPosition(0.f, 0.f);
 	this->background.setSize(this->window_size);//background同时代表显示区域大小
 
-	int circle_num = 100;
+	this->average_dt.setFillColor(sf::Color::Black);
+	this->average_dt.setFont(this->font);
+	this->average_dt.setPosition(sf::Vector2f(0, 0));
+
+	circle_num = 200;
+	frame_cnt = 0;
+	// 分帧数量，可以根据当前帧数进行调整，
+	// 例如目标是30fps，当前能达到120fps，那就可以调整到cut_num = 4
+	cut_num = 4;
+	now_ts = std::chrono::high_resolution_clock::now();
+
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<float> pos_dist(0.f, this->window_size.y);
@@ -65,93 +38,268 @@ State::State(sf::RenderWindow& window, sf::Font& font)
 		float radius = radius_dist(gen);
 		sf::Vector2f rand_pos(pos_dist(gen), pos_dist(gen));
 		int color = int(color_dist(gen));
-		new Circle(mass_dist(gen), init_vel, rand_pos, radius, color);
+		this->objects.push_back(new Circle(mass_dist(gen), init_vel, rand_pos, radius, color));
 	}
+
+	for (auto& i : this->objects)
+	{
+		Circle* c = dynamic_cast<Circle*>(i);
+		this->SAP_on_x.push_back(
+			SAP{ c,
+			c->getLogicalPosition().x + c->getLogicalRadius(),
+			c->getLogicalPosition().x - c->getLogicalRadius()
+			});
+
+		this->SAP_on_y.push_back(
+			SAP{ c,
+			c->getLogicalPosition().y + c->getLogicalRadius(),
+			c->getLogicalPosition().y - c->getLogicalRadius()
+			});
+	}
+
+	this->collision_pairs.resize((unsigned int)(this->objects.size()* this->objects.size() * 0.02));
+
 }
 
 State::~State()
 {
-	for (auto& i : Object::objects)
+	for (auto& i : this->objects)
 	{
-		//delete i;这地方delete了会有个delete_scaller报错，暂时没搞明白什么情况
+		delete i;
 	}
-	Object::objects.clear();
+	omp_destroy_lock(&this->lock);
 }
 
 void State::updateGravity(const float& dt)
 {
-	for (auto& i : Object::objects)
+	int j = ceil(circle_num / cut_num) * frame_cnt;
+	int k = ceil(circle_num / cut_num) * (frame_cnt + 1);
+	if (k > circle_num)
+		k = circle_num;
+	for (; j < k; j++)
 	{
-		i->appendVelocity(this->g * dt);
+		objects[j]->appendVelocity(this->g * dt);
 	}
 }
 
 void State::updateBoundary()
 {
-	for (auto& i : Object::objects)
+	int j = ceil(circle_num / cut_num) * frame_cnt;
+	int k = ceil(circle_num / cut_num) * (frame_cnt + 1);
+	if (k > circle_num)
+		k = circle_num;
+	for (; j < k; j++) 
 	{
-		if (i->shapeType() == "circle")
+		Circle* cir = dynamic_cast<Circle*>(objects[j]);
+		sf::Vector2f pos = cir->getLogicalPosition();
+		sf::Vector2f vel = cir->getVelocity();
+		float rad = cir->getLogicalRadius();
+		if (pos.y + rad > this->logical_size.y)
 		{
-			if (dynamic_cast<Circle*>(i)->getLogicalPosition().y + dynamic_cast<Circle*>(i)->getLogicalRadius() > this->logical_size.y)
-			{
-				if (i->getVelocity().y > 0.f)
-					i->setVelocity(sf::Vector2f(i->getVelocity().x, -1.f * i->getVelocity().y));
-			}
-			if (dynamic_cast<Circle*>(i)->getLogicalPosition().y + dynamic_cast<Circle*>(i)->getLogicalRadius() < 0.f)
-			{
-				if (i->getVelocity().y < 0.f)
-					i->setVelocity(sf::Vector2f(i->getVelocity().x, -1.f * i->getVelocity().y));
-			}
-			if (dynamic_cast<Circle*>(i)->getLogicalPosition().x + dynamic_cast<Circle*>(i)->getLogicalRadius() > this->logical_size.x)
-			{
-				if (i->getVelocity().x > 0.f)
-					i->setVelocity(sf::Vector2f(-1.f * i->getVelocity().x, i->getVelocity().y));
-			}
-			if (dynamic_cast<Circle*>(i)->getLogicalPosition().x - dynamic_cast<Circle*>(i)->getLogicalRadius() < 0.f)
-			{
-				if (i->getVelocity().x < 0.f)
-					i->setVelocity(sf::Vector2f(-1.f * i->getVelocity().x, i->getVelocity().y));
-			}
+			if (vel.y > 0.f)
+				cir->setVelocity(sf::Vector2f(vel.x, -1.f * vel.y));
+		}
+		if (pos.y + rad < 0.f)
+		{
+			if (vel.y < 0.f)
+				cir->setVelocity(sf::Vector2f(vel.x, -1.f * vel.y));
+		}
+		if (pos.x + rad > this->logical_size.x)
+		{
+			if (vel.x > 0.f)
+				cir->setVelocity(sf::Vector2f(-1.f * vel.x, vel.y));
+		}
+		if (pos.x - rad < 0.f)
+		{
+			if (vel.x < 0.f)
+				cir->setVelocity(sf::Vector2f(-1.f * vel.x, vel.y));
 		}
 	}
 }
 
 void State::updateCollision()
 {
-	size_t obj_num = Object::objects.size();
-	for (int i = 0; i < obj_num; ++i)
-	{
-		for (int j = i + 1; j < obj_num; ++j)
-		{
-			Circle* c1 = dynamic_cast<Circle*>(Object::objects[i]);
-			Circle* c2 = dynamic_cast<Circle*>(Object::objects[j]);
-			float dist = std::hypot(c2->getLogicalPosition().y - c1->getLogicalPosition().y, c2->getLogicalPosition().x - c1->getLogicalPosition().x);
-			if (dist <= c1->getLogicalRadius() + c2->getLogicalRadius())
-			{
-				sf::Vector2f v1 = c1->getVelocity();
-				sf::Vector2f v2 = c2->getVelocity();
-				sf::Vector2f c1_to_c2 = c2->getLogicalPosition() - c1->getLogicalPosition();
+	auto startTime = std::chrono::high_resolution_clock::now();
+	if (frame_cnt % cut_num == 0)
+		this->broadPhase();
+	this->narrowPhase();
+	this->resolvePhase();
 
-				sf::Vector2f unit_c1c2 = c1_to_c2 / dist;
-				sf::Vector2f v1_parallel = unit_c1c2 * dotProduct(v1, unit_c1c2);
-				sf::Vector2f v1_perpendicular = v1 - v1_parallel;
-				sf::Vector2f v2_parallel = unit_c1c2 * dotProduct(v2, unit_c1c2);
-				sf::Vector2f v2_perpendicular = v2 - v2_parallel;
-				sf::Vector2f v1_new = v2_parallel + v1_perpendicular;
-				sf::Vector2f v2_new = v1_parallel + v2_perpendicular;
-				c1->setVelocity(v1_new);
-				c2->setVelocity(v2_new);
+	frame_cnt = (frame_cnt + 1) % cut_num;
+
+	auto endTime = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+	std::cout << "updateCollision execution time: " << duration << " microseconds" << std::endl;
+
+}
+
+void State::broadPhase()
+{
+	this->possible_on_x.clear();
+	this->possible_on_y.clear();
+	this->possible_collision_pairs.clear();
+
+	int len = this->SAP_on_x.size();
+
+	sf::Vector2f v1, v2, c1_to_c2, unit_c1c2;
+	float m1, m2;
+
+#pragma omp parallel for
+	for (int i{ 0 }; i < len; i++)
+	{
+
+		Circle* cx = dynamic_cast<Circle*>(this->SAP_on_x[i].pointer);
+		v1 = cx->getLogicalPosition();
+		m1 = cx->getLogicalRadius();
+		this->SAP_on_x[i].lower = v1.x - m1;
+		this->SAP_on_x[i].upper = v1.x + m1;
+		Circle* cy = dynamic_cast<Circle*>(this->SAP_on_y[i].pointer);
+		v2 = cy->getLogicalPosition();
+		m2 = cy->getLogicalRadius();
+		this->SAP_on_y[i].lower = v2.y - m2;
+		this->SAP_on_y[i].upper = v2.y + m2;
+	}
+
+	for (int i{ 1 }; i < len; i++)
+	{
+		int j{ i - 1 };
+		SAP k{ this->SAP_on_x[i] };
+		while ((j >= 0) && (k.lower < this->SAP_on_x[j].lower))
+		{
+			this->SAP_on_x[j + 1] = this->SAP_on_x[j];
+			j--;
+		}
+		this->SAP_on_x[j + 1] = k;
+	}
+
+	for (int i{ 1 }; i < len; i++)
+	{
+		int j{ i - 1 };
+		SAP k{ this->SAP_on_y[i] };
+		while ((j >= 0) && (k.lower < this->SAP_on_y[j].lower))
+		{
+			this->SAP_on_y[j + 1] = this->SAP_on_y[j];
+			j--;
+		}
+		this->SAP_on_y[j + 1] = k;
+	}
+
+	omp_init_lock(&this->lock);
+#pragma omp parallel for
+	for (int i{ 0 }; i < len; i++)
+	{
+		int j{ i + 1 };
+		while ((j < len) && (this->SAP_on_x[i].upper > this->SAP_on_x[j].lower))
+		{
+			omp_set_lock(&lock);
+			this->possible_on_x.push_back
+			(this->SAP_on_x[i].pointer->serial_number > this->SAP_on_x[j].pointer->serial_number
+				? std::make_pair(this->SAP_on_x[i].pointer, this->SAP_on_x[j].pointer)
+				: std::make_pair(this->SAP_on_x[j].pointer, this->SAP_on_x[i].pointer));
+			omp_unset_lock(&lock);
+			j++;
+		}
+	}
+
+	omp_init_lock(&this->lock);
+#pragma omp parallel for
+	for (int i{ 0 }; i < len; i++)
+	{
+		int j{ i + 1 };
+		while ((j < len) && (this->SAP_on_y[i].upper > this->SAP_on_y[j].lower))
+		{
+			omp_set_lock(&lock);
+			this->possible_on_y.push_back
+			(this->SAP_on_y[i].pointer->serial_number > this->SAP_on_y[j].pointer->serial_number
+				? std::make_pair(this->SAP_on_y[i].pointer, this->SAP_on_y[j].pointer)
+				: std::make_pair(this->SAP_on_y[j].pointer, this->SAP_on_y[i].pointer));
+			omp_unset_lock(&lock);
+			j++;
+		}
+	}
+
+	int x{ (int)this->possible_on_x.size() };
+	int y{ (int)this->possible_on_y.size() };
+
+	for (int i{ 0 }; i < x; i++)
+	{
+		omp_init_lock(&this->lock);
+#pragma omp parallel for
+		for (int j{ 0 }; j < y; j++)
+		{
+			if (this->possible_on_x[i].first == this->possible_on_y[j].first &&
+				this->possible_on_x[i].second == this->possible_on_y[j].second)
+			{
+				omp_set_lock(&lock);
+				this->possible_collision_pairs.push_back(this->possible_on_x[i]);
+				omp_unset_lock(&lock);
 			}
 		}
 	}
 }
 
-// 计算向量的点积
-float State::dotProduct(sf::Vector2f v1, sf::Vector2f v2)
+void State::narrowPhase()
 {
-	return v1.x * v2.x + v1.y * v2.y;
+	this->collision_pairs.clear();
+	int obj_cnt = (int)this->possible_collision_pairs.size();
+	float dis;
+	int j = ceil(obj_cnt / cut_num) * frame_cnt;
+	int k = ceil(obj_cnt / cut_num) * (frame_cnt + 1);
+
+	omp_init_lock(&this->lock);
+#pragma omp parallel for
+
+	for (int i{ j }; i < k; i++)
+	{
+		Circle* c1 = dynamic_cast<Circle*>(this->possible_collision_pairs[i].first);
+		Circle* c2 = dynamic_cast<Circle*>(this->possible_collision_pairs[i].second);
+		dis = MathFunction::point_point_dis(c1->getLogicalPosition(), c2->getLogicalPosition());
+		if (dis < c1->getLogicalRadius() + c2->getLogicalRadius())
+		{
+			this->dis_pairs[std::make_pair(c1, c2)] = dis;
+			omp_set_lock(&this->lock);
+			this->collision_pairs.push_back(std::make_pair(c1, c2));
+			omp_unset_lock(&this->lock);
+		}
+	}
 }
 
+void State::resolvePhase()
+{
+	int obj_cnt = (int)this->collision_pairs.size();
+
+	int j = ceil(obj_cnt / cut_num) * frame_cnt;
+	int k = ceil(obj_cnt / cut_num) * (frame_cnt + 1);
+
+	omp_init_lock(&this->lock);
+#pragma omp parallel for
+	for (int i = j; i < k; i++)
+	{
+		Circle* c1 = dynamic_cast<Circle*>(this->collision_pairs[i].first);
+		Circle* c2 = dynamic_cast<Circle*>(this->collision_pairs[i].second);
+		float dist = this->dis_pairs[std::make_pair(c1, c2)];
+
+		omp_set_lock(&this->lock);
+		float m1 = c1->getMass();
+		float m2 = c2->getMass();
+		sf::Vector2f v1 = c1->getVelocity();
+		sf::Vector2f v2 = c2->getVelocity();
+		sf::Vector2f c1_to_c2 = c2->getLogicalPosition() - c1->getLogicalPosition();
+		sf::Vector2f unit_c1c2 = c1_to_c2 / dist;
+
+		// 计算碰撞前的动量
+		sf::Vector2f p1 = m1 * v1;
+		sf::Vector2f p2 = m2 * v2;
+
+		// 根据动量守恒定理计算碰撞后的速度
+		sf::Vector2f v1_new = (p1 + 2.0f * m2 / (m1 + m2) * MathFunction::scalar_product(p2 - p1, unit_c1c2) * unit_c1c2) / (m1);
+		sf::Vector2f v2_new = (p2 - 2.0f * m1 / (m1 + m2) * MathFunction::scalar_product(p2 - p1, unit_c1c2) * unit_c1c2) / (m2);
+
+		c1->setVelocity(v1_new);
+		c2->setVelocity(v2_new);
+		omp_unset_lock(&this->lock);
+	}
+}
 
 
 void State::update(const float& dt)
@@ -160,22 +308,26 @@ void State::update(const float& dt)
 	this->updateCollision();
 	this->updateGravity(dt);
 
-	//Object::collision_pairs.clear();
-
-	for (auto& i : Object::objects)
+	for (auto& i : this->objects)
 	{
 		i->update(dt, this->background.getSize(), this->logical_size, sf::Vector2f(0, 0));
 	}
-
-	//this->handleCollision();
+	std::chrono::high_resolution_clock::time_point cur = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> duration = std::chrono::duration_cast<std::chrono::duration<double>>(cur - now_ts);
+	if (duration.count() > 1) {
+		this->average_dt.setString(std::to_string(int(1 / dt)) + "FPS");
+		now_ts = cur;
+	}
 }
 
 void State::render(sf::RenderTarget& target)
 {
 	target.draw(this->background);
 
-	for (auto& i : Object::objects)
+	for (auto& i : this->objects)
 	{
 		i->render(target);
 	}
+
+	target.draw(this->average_dt);
 }

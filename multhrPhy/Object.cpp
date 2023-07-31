@@ -1,12 +1,14 @@
 ﻿#include "Object.h"
 
-std::vector<Object*>Object::objects; 
-std::vector<std::pair<Object*, Object*>>Object::collision_pairs;
+int Object::No;
+//std::vector<Object*>Object::objects; 
+//std::vector<std::pair<Object*, Object*>>Object::collision_pairs;
 
 Object::Object(const float& mass, const sf::Vector2f& velocity)
-	:mass{ mass }, velocity{ velocity }
+	:mass{ mass }, velocity{ velocity }, serial_number{ No }
 {
-	Object::objects.push_back(this);
+	//Object::objects.push_back(this);
+	No++;
 }
 
 Object::~Object()
@@ -35,7 +37,7 @@ void Object::setVelocity(const sf::Vector2f& set_velocity)
 
 void Object::update(const float& dt, const sf::Vector2f& rendering_size, const sf::Vector2f& logical_size, const sf::Vector2f& offset)
 {
-	this->updateCollision();
+	//this->updateCollision();
 	this->updateMovement(dt);
 	this->updateLogic();
 	this->updateShape(rendering_size, logical_size, offset);
