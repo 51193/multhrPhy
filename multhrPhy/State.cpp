@@ -57,7 +57,7 @@ State::State(sf::RenderWindow& window, sf::Font& font)
 			});
 	}
 
-	this->collision_pairs.resize((unsigned int)(this->objects.size()* this->objects.size() * 0.02));
+	this->collision_pairs.resize((unsigned int)(this->objects.size() * this->objects.size() * 0.02));
 
 }
 
@@ -88,7 +88,7 @@ void State::updateBoundary()
 	int k = ceil(circle_num / cut_num) * (frame_cnt + 1);
 	if (k > circle_num)
 		k = circle_num;
-	for (; j < k; j++) 
+	for (; j < k; j++)
 	{
 		Circle* cir = dynamic_cast<Circle*>(objects[j]);
 		sf::Vector2f pos = cir->getLogicalPosition();
@@ -120,6 +120,7 @@ void State::updateBoundary()
 void State::updateCollision()
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
+
 	if (frame_cnt % cut_num == 0)
 		this->broadPhase();
 	this->narrowPhase();
@@ -139,25 +140,43 @@ void State::broadPhase()
 	this->possible_on_y.clear();
 	this->possible_collision_pairs.clear();
 
+#pragma omp parallel
+	{
+#pragma omp single
+		{
+			detectAxises();
+		}
+	}
+
+	intersectAxises();
+}
+
+void State::detectAxises() {
+	double start = omp_get_wtime();
+
+#pragma omp task
+	detectAxisX();
+
+#pragma omp task
+	detectAxisY();
+
+	double end = omp_get_wtime();
+	std::printf("detectAxises execution time:%.16g microseconds\n", (end - start) * 1000);
+}
+
+void State::detectAxisX() {
+	sf::Vector2f v1, v2;
+	float m1, m2;
 	int len = this->SAP_on_x.size();
 
-	sf::Vector2f v1, v2, c1_to_c2, unit_c1c2;
-	float m1, m2;
-
-#pragma omp parallel for
+	//#pragma omp parallel for
 	for (int i{ 0 }; i < len; i++)
 	{
-
 		Circle* cx = dynamic_cast<Circle*>(this->SAP_on_x[i].pointer);
 		v1 = cx->getLogicalPosition();
 		m1 = cx->getLogicalRadius();
 		this->SAP_on_x[i].lower = v1.x - m1;
 		this->SAP_on_x[i].upper = v1.x + m1;
-		Circle* cy = dynamic_cast<Circle*>(this->SAP_on_y[i].pointer);
-		v2 = cy->getLogicalPosition();
-		m2 = cy->getLogicalRadius();
-		this->SAP_on_y[i].lower = v2.y - m2;
-		this->SAP_on_y[i].upper = v2.y + m2;
 	}
 
 	for (int i{ 1 }; i < len; i++)
@@ -172,6 +191,39 @@ void State::broadPhase()
 		this->SAP_on_x[j + 1] = k;
 	}
 
+	//omp_init_lock(&this->lock);
+//#pragma omp parallel for
+	for (int i{ 0 }; i < len; i++)
+	{
+		int j{ i + 1 };
+		while ((j < len) && (this->SAP_on_x[i].upper > this->SAP_on_x[j].lower))
+		{
+			//omp_set_lock(&lock);
+			this->possible_on_x.push_back
+			(this->SAP_on_x[i].pointer->serial_number > this->SAP_on_x[j].pointer->serial_number
+				? std::make_pair(this->SAP_on_x[i].pointer, this->SAP_on_x[j].pointer)
+				: std::make_pair(this->SAP_on_x[j].pointer, this->SAP_on_x[i].pointer));
+			//omp_unset_lock(&lock);
+			j++;
+		}
+	}
+}
+
+void State::detectAxisY() {
+	sf::Vector2f v1, v2;
+	float m1, m2;
+	int len = this->SAP_on_x.size();
+
+	//#pragma omp parallel for
+	for (int i{ 0 }; i < len; i++)
+	{
+		Circle* cy = dynamic_cast<Circle*>(this->SAP_on_y[i].pointer);
+		v2 = cy->getLogicalPosition();
+		m2 = cy->getLogicalRadius();
+		this->SAP_on_y[i].lower = v2.y - m2;
+		this->SAP_on_y[i].upper = v2.y + m2;
+	}
+
 	for (int i{ 1 }; i < len; i++)
 	{
 		int j{ i - 1 };
@@ -184,58 +236,53 @@ void State::broadPhase()
 		this->SAP_on_y[j + 1] = k;
 	}
 
-	omp_init_lock(&this->lock);
-#pragma omp parallel for
-	for (int i{ 0 }; i < len; i++)
-	{
-		int j{ i + 1 };
-		while ((j < len) && (this->SAP_on_x[i].upper > this->SAP_on_x[j].lower))
-		{
-			omp_set_lock(&lock);
-			this->possible_on_x.push_back
-			(this->SAP_on_x[i].pointer->serial_number > this->SAP_on_x[j].pointer->serial_number
-				? std::make_pair(this->SAP_on_x[i].pointer, this->SAP_on_x[j].pointer)
-				: std::make_pair(this->SAP_on_x[j].pointer, this->SAP_on_x[i].pointer));
-			omp_unset_lock(&lock);
-			j++;
-		}
-	}
-
-	omp_init_lock(&this->lock);
-#pragma omp parallel for
+	//omp_init_lock(&this->lock);
+//#pragma omp parallel for
 	for (int i{ 0 }; i < len; i++)
 	{
 		int j{ i + 1 };
 		while ((j < len) && (this->SAP_on_y[i].upper > this->SAP_on_y[j].lower))
 		{
-			omp_set_lock(&lock);
+			//omp_set_lock(&lock);
 			this->possible_on_y.push_back
 			(this->SAP_on_y[i].pointer->serial_number > this->SAP_on_y[j].pointer->serial_number
 				? std::make_pair(this->SAP_on_y[i].pointer, this->SAP_on_y[j].pointer)
 				: std::make_pair(this->SAP_on_y[j].pointer, this->SAP_on_y[i].pointer));
-			omp_unset_lock(&lock);
+			//omp_unset_lock(&lock);
 			j++;
 		}
 	}
+}
+
+void State::intersectAxises() {
+	double start = omp_get_wtime();
 
 	int x{ (int)this->possible_on_x.size() };
 	int y{ (int)this->possible_on_y.size() };
 
-	for (int i{ 0 }; i < x; i++)
+#pragma omp parallel
 	{
-		omp_init_lock(&this->lock);
-#pragma omp parallel for
-		for (int j{ 0 }; j < y; j++)
+		std::vector<std::pair<Object*, Object*>> vec_private;
+#pragma omp for nowait
+		for (int i{ 0 }; i < x; i++)
 		{
-			if (this->possible_on_x[i].first == this->possible_on_y[j].first &&
-				this->possible_on_x[i].second == this->possible_on_y[j].second)
+			for (int j{ 0 }; j < y; j++)
 			{
-				omp_set_lock(&lock);
-				this->possible_collision_pairs.push_back(this->possible_on_x[i]);
-				omp_unset_lock(&lock);
+				if (this->possible_on_x[i].first == this->possible_on_y[j].first &&
+					this->possible_on_x[i].second == this->possible_on_y[j].second)
+				{
+					vec_private.push_back(this->possible_on_x[i]);
+					break;
+				}
 			}
 		}
+
+#pragma omp critical
+		this->possible_collision_pairs.insert(this->possible_collision_pairs.end(), vec_private.begin(), vec_private.end());
 	}
+
+	double end = omp_get_wtime();
+	std::printf("intersectAxises execution time:%.16g microseconds\n", (end - start) * 1000);
 }
 
 void State::narrowPhase()

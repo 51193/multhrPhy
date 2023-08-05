@@ -75,6 +75,11 @@ private:
 	void narrowPhase();
 	void resolvePhase();
 
+	void detectAxises();
+	void detectAxisX();
+	void detectAxisY();
+	void intersectAxises();
+
 public:
 	State(sf::RenderWindow& window, sf::Font& font);
 	~State();
